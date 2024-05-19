@@ -1,6 +1,6 @@
+import * as http from 'http';
 import express from 'express';
 import ws from 'ws';
-import * as http from 'http';
 
 const app = express();
 
@@ -12,14 +12,24 @@ app.get('/*', (_, res) => res.redirect('/'));
 
 const server = http.createServer(app);
 const wss = new ws.WebSocketServer({ server });
+const sockets = [];
 
 wss.on('connection', (socket) => {
+  sockets.push(socket);
   console.log('A new WebSocket connection has been established');
   socket.on('close', () => console.log('Disconnected from the Browser ❌'));
-  socket.on('message', (message) => {
-    console.log(message);
+  socket.on('message', (msg) => {
+    const message = JSON.parse(msg);
+    switch (message.type) {
+      case 'new_message':
+        sockets.forEach((aSocket) =>
+          aSocket.send(`${socket.nickname}: ${message.payload}`)
+        );
+        break;
+      case 'nickname':
+        socket['nickname'] = message.payload;
+    }
   });
-  socket.send('hello!!!');
 });
 
 server.listen(3000, () => {
