@@ -14,7 +14,14 @@ app.get('/*', (_, res) => res.redirect('/'));
 const httpServer = http.createServer(app);
 const wsServer = new Server(httpServer);
 
-
+wsServer.on('connection', (socket) => {
+  socket.on('enter_room', (roomName, done) => {
+    console.log(roomName);
+    setTimeout(() => {
+      done('hello from the backend');
+    }, 1000);
+  });
+});
 // const wss = new ws.WebSocketServer({ httpServer });
 // const sockets = [];
 //
@@ -37,6 +44,5 @@ const wsServer = new Server(httpServer);
 //   });
 // });
 
-httpServer.listen(3000, () => {
-  console.log('HTTP and WebSocket httpServer running on http://localhost:3000');
-});
+const handleListen = () => console.log(`Listening on http://localhost:3000`);
+httpServer.listen(3000, handleListen);
